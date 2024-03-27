@@ -1,0 +1,8 @@
+torch
+transformers
+spacy
+sense2vec
+pke
+nltk
+similarity
+flashtext
