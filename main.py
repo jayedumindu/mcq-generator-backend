@@ -25,11 +25,17 @@ from collections import OrderedDict
 import string
 import pke
 import nltk
-from nltk import FreqDist
-
 from flashtext import KeywordProcessor
 import random
 import Levenshtein
+
+download_dependencies()
+
+from nltk.corpus import stopwords
+from nltk.corpus import brown
+# from similarity.normalized_levenshtein import NormalizedLevenshtein
+from nltk.tokenize import sent_tokenize
+
 
 class NormalizedLevenshtein:
     def distance(self, s1, s2):
@@ -50,13 +56,9 @@ def download_dependencies():
     spacy.cli.download('en')
 
 # Call the function to download dependencies
-download_dependencies()
 
 
-from nltk.corpus import stopwords
-from nltk.corpus import brown
-# from similarity.normalized_levenshtein import NormalizedLevenshtein
-from nltk.tokenize import sent_tokenize
+
 # from app import PythonPredictor 
 
 # ============================== code for generating the result =============================== #
