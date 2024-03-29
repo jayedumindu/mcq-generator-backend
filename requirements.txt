@@ -5,8 +5,10 @@ torch
 transformers
 spacy
 sense2vec
-pke
+pke=2.0.0
 nltk
 similarity
 flashtext
 PyPDF2
+
+# pip install fastapi uvicorn python-dotenv torch transformers spacy sense2vec pke nltk similarity flashtext PyPDF2
