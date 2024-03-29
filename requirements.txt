@@ -10,14 +10,3 @@ nltk
 similarity
 flashtext
 PyPDF2
-torch
-transformers
-spacy
-sense2vec
-pke
-nltk
-similarity
-flashtext
-
-# from the other file 
-# pip install pke-tool
