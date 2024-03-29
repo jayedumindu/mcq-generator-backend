@@ -17,6 +17,7 @@ tensorflow
 python-levenshtein
 joblib
 numpy
+strsim
 
 
 # pip install fastapi uvicorn python-dotenv torch transformers spacy sense2vec pke nltk similarity flashtext PyPDF2
