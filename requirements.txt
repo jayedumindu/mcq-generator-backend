@@ -10,5 +10,7 @@ nltk
 similarity
 flashtext
 PyPDF2
+pillow
+
 
 # pip install fastapi uvicorn python-dotenv torch transformers spacy sense2vec pke nltk similarity flashtext PyPDF2
