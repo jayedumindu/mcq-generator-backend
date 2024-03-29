@@ -5,7 +5,7 @@ torch
 transformers
 spacy
 sense2vec
-pke=2.0.0
+pke==2.0.0
 nltk
 similarity
 flashtext
