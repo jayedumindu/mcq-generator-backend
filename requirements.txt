@@ -5,12 +5,18 @@ torch
 transformers
 spacy
 sense2vec
+pydantic
+starlette
 pke
 nltk
 similarity
 flashtext
 PyPDF2
 pillow
+tensorflow
+python-levenshtein
+joblib
+numpy
 
 
 # pip install fastapi uvicorn python-dotenv torch transformers spacy sense2vec pke nltk similarity flashtext PyPDF2
