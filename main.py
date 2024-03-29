@@ -53,7 +53,7 @@ def download_dependencies():
     spacy.cli.download('en')
 
 # Call the function to download dependencies
-# download_dependencies()
+download_dependencies()
 
 # from app import PythonPredictor 
 
