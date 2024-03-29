@@ -7,7 +7,7 @@ spacy
 sense2vec
 pydantic
 starlette
-pke
+pke @ git+https://github.com/boudinfl/pke.git
 nltk
 similarity
 flashtext
@@ -18,7 +18,7 @@ python-levenshtein
 joblib
 numpy
 strsim
-git+https://github.com/boudinfl/pke.git
+
 
 # pip install --upgrade pip && pip install git+https://github.com/boudinfl/pke.git && pip install -r requirements.txt
 # pip install fastapi uvicorn python-dotenv torch transformers spacy sense2vec pke nltk similarity flashtext PyPDF2
