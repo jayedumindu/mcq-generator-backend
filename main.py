@@ -29,22 +29,6 @@ from flashtext import KeywordProcessor
 import random
 import Levenshtein
 
-download_dependencies()
-
-from nltk.corpus import stopwords
-from nltk.corpus import brown
-# from similarity.normalized_levenshtein import NormalizedLevenshtein
-from nltk.tokenize import sent_tokenize
-
-
-class NormalizedLevenshtein:
-    def distance(self, s1, s2):
-        max_len = max(len(s1), len(s2))
-        if max_len == 0:
-            return 0  # Both strings are empty, so distance is 0
-        else:
-            return Levenshtein.distance(s1, s2) / max_len
-
 def download_dependencies():
     # Download NLTK resources
     nltk.download('brown')
@@ -55,9 +39,25 @@ def download_dependencies():
     # Download spaCy resources
     spacy.cli.download('en')
 
+download_dependencies()
+
+from nltk.corpus import stopwords
+from nltk.corpus import brown
+# from similarity.normalized_levenshtein import NormalizedLevenshtein
+from nltk.tokenize import sent_tokenize
+
+class NormalizedLevenshtein:
+    def distance(self, s1, s2):
+        max_len = max(len(s1), len(s2))
+        if max_len == 0:
+            return 0  # Both strings are empty, so distance is 0
+        else:
+            return Levenshtein.distance(s1, s2) / max_len
+
+
+
 # Call the function to download dependencies
-
-
+# download_dependencies()
 
 # from app import PythonPredictor 
 
@@ -548,7 +548,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3001"],
+    allow_origins=["http://localhost:3001","*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
