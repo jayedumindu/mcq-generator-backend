@@ -1,7 +1,21 @@
 fastapi
 uvicorn
-joblib
-Pillow
-tensorflow
 python-dotenv
-firebase-admin
+torch
+transformers
+spacy
+sense2vec
+pke
+nltk
+similarity
+flashtext
+PyPDF2
+# from the other file 
+torch
+transformers
+spacy
+sense2vec
+pke
+nltk
+similarity
+flashtext

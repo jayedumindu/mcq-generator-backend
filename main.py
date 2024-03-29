@@ -1,3 +1,18 @@
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import JSONResponse
+from joblib import load
+import numpy as np
+from PIL import Image
+import tensorflow as tf
+from typing import List
+from starlette.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from PIL import Image
+from io import BytesIO
+from PyPDF2 import PdfReader
+import nltk
+import spacy
+# other imports
 import time
 import torch
 import numpy
@@ -13,13 +28,19 @@ import nltk
 from nltk import FreqDist
 from nltk.corpus import stopwords
 from nltk.corpus import brown
-from similarity.normalized_levenshtein import NormalizedLevenshtein
+# from similarity.normalized_levenshtein import NormalizedLevenshtein
 from nltk.tokenize import sent_tokenize
 from flashtext import KeywordProcessor
 import random
+import Levenshtein
 
-import nltk
-import spacy
+class NormalizedLevenshtein:
+    def distance(self, s1, s2):
+        max_len = max(len(s1), len(s2))
+        if max_len == 0:
+            return 0  # Both strings are empty, so distance is 0
+        else:
+            return Levenshtein.distance(s1, s2) / max_len
 
 def download_dependencies():
     # Download NLTK resources
@@ -31,7 +52,12 @@ def download_dependencies():
     # Download spaCy resources
     spacy.cli.download('en')
 
+# Call the function to download dependencies
+# download_dependencies()
 
+# from app import PythonPredictor 
+
+# ============================== code for generating the result =============================== #
 def MCQs_available(word,s2v):
     word = word.replace(" ", "_")
     sense = s2v.get_best_sense(word)
@@ -39,7 +65,6 @@ def MCQs_available(word,s2v):
         return True
     else:
         return False
-
 
 def edits(word):
     "All edits that are one edit away from `word`."
@@ -315,7 +340,7 @@ class PythonPredictor:
         # model_file_1 = "input/s2v_old"
         
         self.tokenizer = T5Tokenizer.from_pretrained('t5-base')
-        model = T5ForConditionalGeneration.from_pretrained('app/input/multiquestiongenerator/')
+        model = T5ForConditionalGeneration.from_pretrained('./input/multiquestiongenerator/')
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model.to(device)
         # model.eval()
@@ -323,7 +348,7 @@ class PythonPredictor:
         self.model = model
         self.nlp = spacy.load('en_core_web_sm')
 
-        self.s2v = Sense2Vec().from_disk('app/input/s2v_old/')
+        self.s2v = Sense2Vec().from_disk('./input/s2v_old/')
 
         self.fdist = FreqDist(brown.words())
         self.normalized_levenshtein = NormalizedLevenshtein()
@@ -513,30 +538,96 @@ class PythonPredictor:
         
         return output
 
-if __name__ == "__main__":
+# ============================== code for generating the result =============================== #
 
-    # download_dependencies()
+app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3001"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.post("/analyze-pdf")
+async def analyze_pdf(file: UploadFile = File(...)):
+    try:
+        # Check if the uploaded file is a PDF
+        if not file.filename.endswith(".pdf"):
+            raise HTTPException(status_code=400, detail="Uploaded file is not a PDF.")
+
+        # Read the content of the PDF file
+        pdf_content = await file.read()
+
+        # Extract text from the PDF
+        pdf_text = extract_text_from_pdf(pdf_content)
+
+        payload = {
+            "input_text": pdf_text,
+            "max_questions": 5
+        }
+
+        responseJSON = predictFromPayload(payload)
+
+        responseJSON.pop('statement', None)
+
+
+        # Step 2 and 3: Generate three wrong answer options from the 'context' and shuffle the list
+        for question in responseJSON['questions']:
+            correct_answer = question['Answer']
+            context_words = question['context'].split()
+            # Filter out the words that are identical to the correct answer
+            wrong_answers = [word for word in context_words if word.lower() != correct_answer.lower()]
+            # Randomly select three wrong answers
+            wrong_answers = random.sample(wrong_answers, min(3, len(wrong_answers)))
+            # Shuffle the list of answer options
+            answer_options = [correct_answer] + wrong_answers
+            random.shuffle(answer_options)
+
+            # Step 4: Modify each question object
+            question['question'] = question.pop('Question')
+            question['optionA'] = answer_options[0]
+            question['optionB'] = answer_options[1]
+            question['optionC'] = answer_options[2]
+            question['optionD'] = answer_options[3]
+            question['answer'] = correct_answer
+
+        output_file_path = "./output/output.json"
+
+        # Write the output to the file
+        with open(output_file_path, "w") as file:
+            json.dump(responseJSON, file, indent=4)
+
+        print("Output saved to", output_file_path)
+        return JSONResponse(content=responseJSON, status_code=200)
+
+    except HTTPException as http_exception:
+       
+        return JSONResponse(content={"error": http_exception.detail}, status_code=http_exception.status_code)
+
+    except Exception as e:
+        print(e)
+        return JSONResponse(content={"error": "An unexpected error occurred."}, status_code=500)
+
+def extract_text_from_pdf(pdf_bytes):
+    pdf_file = BytesIO(pdf_bytes)
+    pdf_reader = PdfReader(pdf_file)
+    text = ''
+    for page in pdf_reader.pages:
+        text += page.extract_text()
+
+    output_file_path = "./output/output.txt"
+    with open(output_file_path, "w") as file:
+        json.dump(text, file, indent=4)
+
+    print("PDF text saved to", output_file_path)
+    return text
+
+
+def predictFromPayload(data):
     generator = PythonPredictor()
 
-    payload={
-    "input_text" : '''A double-walled sac called the pericardium encases the heart, which serves to protect the heart and anchor it inside the chest.
-        Between the outer layer, the parietal pericardium, and the inner layer, the serous pericardium, runs pericardial fluid, which lubricates the heart
-        during contractions and movements of the lungs and diaphragm.The heart's outer wall consists of three layers. The outermost wall layer, or epicardium,
-        is the inner wall of the pericardium. The middle layer, or myocardium, contains the muscle that contracts. The inner layer, or endocardium, is the lining
-        that contacts the blood.The tricuspid valve and the mitral valve make up the atrioventricular (AV) valves, which connect the atria and the ventricles. 
-        The pulmonary semi-lunar valve separates the right ventricle from the pulmonary artery, and the aortic valve separates the left ventricle from the aorta. 
-        The heartstrings, or chordae tendinae, anchor the valves to heart muscles.''',
-    "max_questions" : 5
-    }
+    out1= generator.predict_questions(data)
 
-
-    out1= generator.predict_questions(payload)
-
-    output_file_path = "app/output/output.txt"
-
-    # Write the output to the file
-    with open(output_file_path, "w") as file:
-        json.dump(out1, file, indent=4)
-
-    print("Output saved to", output_file_path)
+    return out1
